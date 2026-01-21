@@ -123,11 +123,11 @@ html[data-theme='light'] {
 }
 
 html[data-theme='dark'] {
-  --cm-backgroundColor: var(--bolt-elements-bg-depth-2);
+  --cm-backgroundColor: #0b0d13;
   --bolt-elements-editor-gutter-textColor: var(--bolt-elements-textTertiary);
   --bolt-elements-editor-gutter-activeLineTextColor: var(--bolt-elements-textSecondary);
   --bolt-elements-editor-selection-inactiveBackgroundOpacity: 0.3;
-  --bolt-elements-editor-activeLineBackgroundColor: rgb(50 53 63 / 50%);
+  --bolt-elements-editor-activeLineBackgroundColor: #0b0d13;
   --bolt-elements-editor-foldGutter-textColorHover: var(--bolt-elements-textPrimary);
   --bolt-elements-editor-matchingBracketBackgroundColor: rgba(66, 180, 255, 0.3);
   --bolt-elements-editor-search-button-backgroundColor: theme('colors.gray.800');
