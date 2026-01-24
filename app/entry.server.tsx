@@ -1,10 +1,13 @@
-import type { AppLoadContext } from '@remix-run/cloudflare';
+import type { AppLoadContext } from '@remix-run/node';
 import { RemixServer } from '@remix-run/react';
 import { isbot } from 'isbot';
-import { renderToReadableStream } from 'react-dom/server';
+import { renderToPipeableStream } from 'react-dom/server';
 import { renderHeadToString } from 'remix-island';
 import { Head } from './root';
 import { themeStore } from '~/lib/stores/theme';
+import { PassThrough, Transform } from 'node:stream';
+
+const ABORT_DELAY = 5_000;
 
 export default async function handleRequest(
   request: Request,
@@ -13,68 +16,60 @@ export default async function handleRequest(
   remixContext: any,
   _loadContext: AppLoadContext,
 ) {
-  // await initializeModelList({});
+  const callbackName = isbot(request.headers.get('user-agent') || '') ? 'onAllReady' : 'onShellReady';
 
-  const readable = await renderToReadableStream(<RemixServer context={remixContext} url={request.url} />, {
-    signal: request.signal,
-    onError(error: unknown) {
-      console.error(error);
-      responseStatusCode = 500;
-    },
-  });
+  return new Promise((resolve, reject) => {
+    let shellRendered = false;
+    const { pipe, abort } = renderToPipeableStream(
+      <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />,
+      {
+        [callbackName]: () => {
+          shellRendered = true;
+          const body = new PassThrough();
+          const head = renderHeadToString({ request, remixContext, Head });
 
-  const body = new ReadableStream({
-    start(controller) {
-      const head = renderHeadToString({ request, remixContext, Head });
+          responseHeaders.set('Content-Type', 'text/html');
+          responseHeaders.set('Cross-Origin-Embedder-Policy', 'require-corp');
+          responseHeaders.set('Cross-Origin-Opener-Policy', 'same-origin');
 
-      controller.enqueue(
-        new Uint8Array(
-          new TextEncoder().encode(
+          // Write the HTML shell
+          body.write(
             `<!DOCTYPE html><html lang="en" data-theme="${themeStore.value}"><head>${head}</head><body><div id="root" class="w-full h-full">`,
-          ),
-        ),
-      );
+          );
 
-      const reader = readable.getReader();
+          resolve(
+            new Response(body as unknown as ReadableStream, {
+              headers: responseHeaders,
+              status: responseStatusCode,
+            }),
+          );
 
-      function read() {
-        reader
-          .read()
-          .then(({ done, value }) => {
-            if (done) {
-              controller.enqueue(new Uint8Array(new TextEncoder().encode('</div></body></html>')));
-              controller.close();
-
-              return;
-            }
-
-            controller.enqueue(value);
-            read();
-          })
-          .catch((error) => {
-            controller.error(error);
-            readable.cancel();
+          // Create a transform stream to append closing tags after React content
+          const appendClosingTags = new Transform({
+            transform(chunk, encoding, callback) {
+              callback(null, chunk);
+            },
+            flush(callback) {
+              this.push('</div></body></html>');
+              callback();
+            },
           });
-      }
-      read();
-    },
 
-    cancel() {
-      readable.cancel();
-    },
-  });
+          // Pipe React content through transform (which appends closing tags) to body
+          pipe(appendClosingTags).pipe(body);
+        },
+        onShellError(error: unknown) {
+          reject(error);
+        },
+        onError(error: unknown) {
+          responseStatusCode = 500;
+          if (shellRendered) {
+            console.error(error);
+          }
+        },
+      },
+    );
 
-  if (isbot(request.headers.get('user-agent') || '')) {
-    await readable.allReady;
-  }
-
-  responseHeaders.set('Content-Type', 'text/html');
-
-  responseHeaders.set('Cross-Origin-Embedder-Policy', 'require-corp');
-  responseHeaders.set('Cross-Origin-Opener-Policy', 'same-origin');
-
-  return new Response(body, {
-    headers: responseHeaders,
-    status: responseStatusCode,
+    setTimeout(abort, ABORT_DELAY);
   });
 }

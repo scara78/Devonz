@@ -15,7 +15,7 @@
  * 3. Return the response to the client
  */
 
-import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
 import { getApiKeysFromCookie } from '~/lib/api/cookies';
 import { withSecurity } from '~/lib/security';
 

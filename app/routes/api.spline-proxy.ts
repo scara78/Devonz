@@ -18,7 +18,7 @@
  *   /api/spline-proxy?url=https://prod.spline.design/V2pT-fO5F255I0pA/scene.splinecode
  */
 
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/node';
 
 const SPLINE_CDN_BASE = 'https://prod.spline.design';
 

@@ -1,4 +1,4 @@
-import { cloudflareDevProxyVitePlugin as remixCloudflareDevProxy, vitePlugin as remixVitePlugin } from '@remix-run/dev';
+import { vitePlugin as remixVitePlugin } from '@remix-run/dev';
 import UnoCSS from 'unocss/vite';
 import { defineConfig, type ViteDevServer } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
@@ -19,16 +19,21 @@ export default defineConfig((config) => {
     build: {
       target: 'esnext',
     },
+    ssr: {
+      // Use native Node.js modules for SSR - don't polyfill these
+      noExternal: [],
+      external: ['stream', 'node:stream', 'util', 'node:util', 'buffer', 'node:buffer'],
+    },
     plugins: [
       nodePolyfills({
-        include: ['buffer', 'process', 'util', 'stream'],
+        include: ['buffer', 'process', 'util'],
         globals: {
           Buffer: true,
           process: true,
           global: true,
         },
         protocolImports: true,
-        exclude: ['child_process', 'fs', 'path'],
+        exclude: ['child_process', 'fs', 'path', 'stream'],
       }),
       {
         name: 'buffer-polyfill',
@@ -43,7 +48,6 @@ export default defineConfig((config) => {
           return null;
         },
       },
-      config.mode !== 'test' && remixCloudflareDevProxy(),
       remixVitePlugin({
         future: {
           v3_fetcherPersist: true,
@@ -81,6 +85,9 @@ export default defineConfig((config) => {
         '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
         '**/tests/preview/**', // Exclude preview tests that require Playwright
       ],
+    },
+    optimizeDeps: {
+      exclude: ['undici'],
     },
   };
 });
