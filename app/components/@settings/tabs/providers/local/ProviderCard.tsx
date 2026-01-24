@@ -47,27 +47,29 @@ function ProviderCard({
         borderColor: provider.settings.enabled ? 'rgba(139, 92, 246, 0.3)' : '#333',
       }}
     >
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4 flex-1">
+      <CardContent className="!p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 flex-1">
             <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300"
+              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300"
               style={{
                 backgroundColor: provider.settings.enabled ? 'rgba(139, 92, 246, 0.1)' : '#2a2a2a',
                 boxShadow: provider.settings.enabled ? '0 0 0 1px rgba(139, 92, 246, 0.3)' : 'none',
               }}
             >
               <Icon
-                className="w-6 h-6 transition-all duration-300"
+                className="w-5 h-5 transition-all duration-300"
                 style={{ color: provider.settings.enabled ? '#a855f7' : '#6b7280' }}
               />
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-lg font-semibold text-white">{provider.name}</h3>
-                <span className="px-2 py-1 text-xs rounded-full bg-green-500/10 text-green-500 font-medium">Local</span>
+            <div className="flex-1 flex flex-col justify-center">
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-semibold text-white">{provider.name}</h3>
+                <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/10 text-green-500 font-medium">
+                  Local
+                </span>
               </div>
-              <p className="text-sm text-gray-400 mb-4">
+              <p className="text-sm text-gray-400">
                 {PROVIDER_DESCRIPTIONS[provider.name as keyof typeof PROVIDER_DESCRIPTIONS]}
               </p>
 

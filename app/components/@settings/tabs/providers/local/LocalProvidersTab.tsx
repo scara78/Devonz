@@ -301,251 +301,259 @@ export default function LocalProvidersTab() {
 
   return (
     <ErrorBoundary>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{
-                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2))',
-                boxShadow: '0 0 0 1px rgba(139, 92, 246, 0.3)',
-              }}
-            >
-              <Cpu className="w-6 h-6 text-purple-500" />
+      <div className="w-full flex justify-center px-4">
+        <div className="space-y-6 max-w-2xl w-full">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div className="flex items-center gap-4">
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2))',
+                  boxShadow: '0 0 0 1px rgba(139, 92, 246, 0.3)',
+                }}
+              >
+                <Cpu className="w-6 h-6 text-purple-500" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold text-white">Local AI Providers</h2>
+                <p className="text-sm text-gray-400">Configure and manage your local AI models</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-2xl font-semibold text-white">Local AI Providers</h2>
-              <p className="text-sm text-gray-400">Configure and manage your local AI models</p>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-400">Enable All</span>
+                <Switch
+                  checked={categoryEnabled}
+                  onCheckedChange={handleToggleCategory}
+                  aria-label="Toggle all local providers"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setViewMode('guide')} className="gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  Setup Guide
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setViewMode('status')} className="gap-2">
+                  <Activity className="w-4 h-4" />
+                  Status
+                </Button>
+              </div>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-400">Enable All</span>
-              <Switch
-                checked={categoryEnabled}
-                onCheckedChange={handleToggleCategory}
-                aria-label="Toggle all local providers"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setViewMode('guide')} className="gap-2">
-                <BookOpen className="w-4 h-4" />
-                Setup Guide
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setViewMode('status')} className="gap-2">
-                <Activity className="w-4 h-4" />
-                Status
-              </Button>
-            </div>
-          </div>
-        </div>
 
-        {/* Provider Cards */}
-        <div className="space-y-4 max-w-4xl mx-auto">
-          {filteredProviders.map((provider) => (
-            <div key={provider.name} className="space-y-4">
-              <ProviderCard
-                provider={provider}
-                onToggle={(enabled) => handleToggleProvider(provider, enabled)}
-                onUpdateBaseUrl={(url) => handleUpdateBaseUrl(provider, url)}
-                isEditing={editingProvider === provider.name}
-                onStartEditing={() => setEditingProvider(provider.name)}
-                onStopEditing={() => setEditingProvider(null)}
-              />
+          {/* Provider Cards */}
+          <div className="space-y-4 mt-8">
+            {filteredProviders.map((provider) => (
+              <div key={provider.name} className="space-y-4">
+                <ProviderCard
+                  provider={provider}
+                  onToggle={(enabled) => handleToggleProvider(provider, enabled)}
+                  onUpdateBaseUrl={(url) => handleUpdateBaseUrl(provider, url)}
+                  isEditing={editingProvider === provider.name}
+                  onStartEditing={() => setEditingProvider(provider.name)}
+                  onStopEditing={() => setEditingProvider(null)}
+                />
 
-              {/* Ollama Models Section */}
-              {provider.name === 'Ollama' && provider.settings.enabled && (
-                <Card className="mt-4 bg-bolt-elements-background-depth-2">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <PackageOpen className="w-5 h-5 text-purple-500" />
-                        <h3 className="text-lg font-semibold text-bolt-elements-textPrimary">Installed Models</h3>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={fetchOllamaModels}
-                        disabled={isLoadingModels}
-                        className="bg-transparent hover:bg-bolt-elements-background-depth-2"
-                      >
-                        {isLoadingModels ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : (
-                          <RotateCw className="w-4 h-4 mr-2" />
-                        )}
-                        Refresh
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {isLoadingModels ? (
-                      <div className="space-y-4">
-                        {Array.from({ length: 3 }).map((_, i) => (
-                          <ModelCardSkeleton key={i} />
-                        ))}
-                      </div>
-                    ) : ollamaModels.length === 0 ? (
-                      <div className="text-center py-8">
-                        <PackageOpen className="w-16 h-16 mx-auto text-bolt-elements-textTertiary mb-4" />
-                        <h3 className="text-lg font-medium text-bolt-elements-textPrimary mb-2">No Models Installed</h3>
-                        <p className="text-sm text-bolt-elements-textSecondary mb-4">
-                          Visit{' '}
-                          <a
-                            href="https://ollama.com/library"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-purple-500 hover:underline inline-flex items-center gap-1"
-                          >
-                            ollama.com/library
-                            <ExternalLink className="w-3 h-3" />
-                          </a>{' '}
-                          to browse available models
-                        </p>
+                {/* Ollama Models Section */}
+                {provider.name === 'Ollama' && provider.settings.enabled && (
+                  <Card className="mt-4 bg-bolt-elements-background-depth-2">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <PackageOpen className="w-5 h-5 text-purple-500" />
+                          <h3 className="text-lg font-semibold text-bolt-elements-textPrimary">Installed Models</h3>
+                        </div>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-gradient-to-r from-purple-500/8 to-purple-600/8 hover:from-purple-500/15 hover:to-purple-600/15 border-purple-500/25 hover:border-purple-500/40 transition-all duration-300 gap-2 group shadow-sm hover:shadow-md font-medium"
-                          _asChild
+                          onClick={fetchOllamaModels}
+                          disabled={isLoadingModels}
+                          className="bg-transparent hover:bg-bolt-elements-background-depth-2"
                         >
-                          <a
-                            href="https://ollama.com/library"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2"
-                          >
-                            <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 flex-shrink-0" />
-                            <span className="flex-1 text-center font-medium">Browse Models</span>
-                          </a>
+                          {isLoadingModels ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          ) : (
+                            <RotateCw className="w-4 h-4 mr-2" />
+                          )}
+                          Refresh
                         </Button>
                       </div>
-                    ) : (
-                      <div className="grid gap-4">
-                        {ollamaModels.map((model) => (
-                          <ModelCard
-                            key={model.name}
-                            model={model}
-                            onUpdate={() => handleUpdateOllamaModel(model.name)}
-                            onDelete={() => handleDeleteOllamaModel(model.name)}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {isLoadingModels ? (
+                        <div className="space-y-4">
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <ModelCardSkeleton key={i} />
+                          ))}
+                        </div>
+                      ) : ollamaModels.length === 0 ? (
+                        <div className="text-center py-8">
+                          <PackageOpen className="w-16 h-16 mx-auto text-bolt-elements-textTertiary mb-4" />
+                          <h3 className="text-lg font-medium text-bolt-elements-textPrimary mb-2">
+                            No Models Installed
+                          </h3>
+                          <p className="text-sm text-bolt-elements-textSecondary mb-4">
+                            Visit{' '}
+                            <a
+                              href="https://ollama.com/library"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-purple-500 hover:underline inline-flex items-center gap-1"
+                            >
+                              ollama.com/library
+                              <ExternalLink className="w-3 h-3" />
+                            </a>{' '}
+                            to browse available models
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-gradient-to-r from-purple-500/8 to-purple-600/8 hover:from-purple-500/15 hover:to-purple-600/15 border-purple-500/25 hover:border-purple-500/40 transition-all duration-300 gap-2 group shadow-sm hover:shadow-md font-medium"
+                            _asChild
+                          >
+                            <a
+                              href="https://ollama.com/library"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center gap-2"
+                            >
+                              <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 flex-shrink-0" />
+                              <span className="flex-1 text-center font-medium">Browse Models</span>
+                            </a>
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="grid gap-4">
+                          {ollamaModels.map((model) => (
+                            <ModelCard
+                              key={model.name}
+                              model={model}
+                              onUpdate={() => handleUpdateOllamaModel(model.name)}
+                              onDelete={() => handleDeleteOllamaModel(model.name)}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
 
-              {/* LM Studio Models Section */}
-              {provider.name === 'LMStudio' && provider.settings.enabled && (
-                <Card className="mt-4 bg-bolt-elements-background-depth-2">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Monitor className="w-5 h-5 text-blue-500" />
-                        <h3 className="text-lg font-semibold text-bolt-elements-textPrimary">Available Models</h3>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => fetchLMStudioModels(provider.settings.baseUrl!)}
-                        disabled={isLoadingLMStudioModels}
-                        className="bg-transparent hover:bg-bolt-elements-background-depth-2"
-                      >
-                        {isLoadingLMStudioModels ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : (
-                          <RotateCw className="w-4 h-4 mr-2" />
-                        )}
-                        Refresh
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {isLoadingLMStudioModels ? (
-                      <div className="space-y-4">
-                        {Array.from({ length: 3 }).map((_, i) => (
-                          <ModelCardSkeleton key={i} />
-                        ))}
-                      </div>
-                    ) : lmStudioModels.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Monitor className="w-16 h-16 mx-auto text-bolt-elements-textTertiary mb-4" />
-                        <h3 className="text-lg font-medium text-bolt-elements-textPrimary mb-2">No Models Available</h3>
-                        <p className="text-sm text-bolt-elements-textSecondary mb-4">
-                          Make sure LM Studio is running with the local server started and CORS enabled.
-                        </p>
+                {/* LM Studio Models Section */}
+                {provider.name === 'LMStudio' && provider.settings.enabled && (
+                  <Card className="mt-4 bg-bolt-elements-background-depth-2">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Monitor className="w-5 h-5 text-blue-500" />
+                          <h3 className="text-lg font-semibold text-bolt-elements-textPrimary">Available Models</h3>
+                        </div>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-gradient-to-r from-blue-500/8 to-blue-600/8 hover:from-blue-500/15 hover:to-blue-600/15 border-blue-500/25 hover:border-blue-500/40 transition-all duration-300 gap-2 group shadow-sm hover:shadow-md font-medium"
-                          _asChild
+                          onClick={() => fetchLMStudioModels(provider.settings.baseUrl!)}
+                          disabled={isLoadingLMStudioModels}
+                          className="bg-transparent hover:bg-bolt-elements-background-depth-2"
                         >
-                          <a
-                            href="https://lmstudio.ai/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2"
-                          >
-                            <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 flex-shrink-0" />
-                            <span className="flex-1 text-center font-medium">Get LM Studio</span>
-                          </a>
+                          {isLoadingLMStudioModels ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          ) : (
+                            <RotateCw className="w-4 h-4 mr-2" />
+                          )}
+                          Refresh
                         </Button>
                       </div>
-                    ) : (
-                      <div className="grid gap-4">
-                        {lmStudioModels.map((model) => (
-                          <Card key={model.id} className="bg-bolt-elements-background-depth-3">
-                            <CardContent className="p-4">
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="text-sm font-medium text-bolt-elements-textPrimary font-mono">
-                                    {model.id}
-                                  </h4>
-                                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500">
-                                    Available
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-4 text-xs text-bolt-elements-textSecondary">
-                                  <div className="flex items-center gap-1">
-                                    <Server className="w-3 h-3" />
-                                    <span>{model.object}</span>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {isLoadingLMStudioModels ? (
+                        <div className="space-y-4">
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <ModelCardSkeleton key={i} />
+                          ))}
+                        </div>
+                      ) : lmStudioModels.length === 0 ? (
+                        <div className="text-center py-8">
+                          <Monitor className="w-16 h-16 mx-auto text-bolt-elements-textTertiary mb-4" />
+                          <h3 className="text-lg font-medium text-bolt-elements-textPrimary mb-2">
+                            No Models Available
+                          </h3>
+                          <p className="text-sm text-bolt-elements-textSecondary mb-4">
+                            Make sure LM Studio is running with the local server started and CORS enabled.
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-gradient-to-r from-blue-500/8 to-blue-600/8 hover:from-blue-500/15 hover:to-blue-600/15 border-blue-500/25 hover:border-blue-500/40 transition-all duration-300 gap-2 group shadow-sm hover:shadow-md font-medium"
+                            _asChild
+                          >
+                            <a
+                              href="https://lmstudio.ai/"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center gap-2"
+                            >
+                              <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 flex-shrink-0" />
+                              <span className="flex-1 text-center font-medium">Get LM Studio</span>
+                            </a>
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="grid gap-4">
+                          {lmStudioModels.map((model) => (
+                            <Card key={model.id} className="bg-bolt-elements-background-depth-3">
+                              <CardContent className="p-4">
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="text-sm font-medium text-bolt-elements-textPrimary font-mono">
+                                      {model.id}
+                                    </h4>
+                                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500">
+                                      Available
+                                    </span>
                                   </div>
-                                  <div className="flex items-center gap-1">
-                                    <Activity className="w-3 h-3" />
-                                    <span>Owned by: {model.owned_by}</span>
-                                  </div>
-                                  {model.created && (
+                                  <div className="flex items-center gap-4 text-xs text-bolt-elements-textSecondary">
+                                    <div className="flex items-center gap-1">
+                                      <Server className="w-3 h-3" />
+                                      <span>{model.object}</span>
+                                    </div>
                                     <div className="flex items-center gap-1">
                                       <Activity className="w-3 h-3" />
-                                      <span>Created: {new Date(model.created * 1000).toLocaleDateString()}</span>
+                                      <span>Owned by: {model.owned_by}</span>
                                     </div>
-                                  )}
+                                    {model.created && (
+                                      <div className="flex items-center gap-1">
+                                        <Activity className="w-3 h-3" />
+                                        <span>Created: {new Date(model.created * 1000).toLocaleDateString()}</span>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          ))}
-        </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            ))}
+          </div>
 
-        {filteredProviders.length === 0 && (
-          <Card className="bg-bolt-elements-background-depth-2">
-            <CardContent className="p-8 text-center">
-              <Server className="w-16 h-16 mx-auto text-bolt-elements-textTertiary mb-4" />
-              <h3 className="text-lg font-medium text-bolt-elements-textPrimary mb-2">No Local Providers Available</h3>
-              <p className="text-sm text-bolt-elements-textSecondary">
-                Local providers will appear here when they're configured in the system.
-              </p>
-            </CardContent>
-          </Card>
-        )}
+          {filteredProviders.length === 0 && (
+            <Card className="bg-bolt-elements-background-depth-2">
+              <CardContent className="p-8 text-center">
+                <Server className="w-16 h-16 mx-auto text-bolt-elements-textTertiary mb-4" />
+                <h3 className="text-lg font-medium text-bolt-elements-textPrimary mb-2">
+                  No Local Providers Available
+                </h3>
+                <p className="text-sm text-bolt-elements-textSecondary">
+                  Local providers will appear here when they're configured in the system.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </ErrorBoundary>
   );

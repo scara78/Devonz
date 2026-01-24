@@ -1,5 +1,5 @@
 // Remove unused imports
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Switch } from '~/components/ui/Switch';
 import { useSettings } from '~/lib/hooks/useSettings';
@@ -9,6 +9,15 @@ import { PromptLibrary } from '~/lib/common/prompt-library';
 import { useStore } from '@nanostores/react';
 import { stagingStore, updateSettings as updateStagingSettings } from '~/lib/stores/staging';
 import { autoFixStore, updateAutoFixSettings } from '~/lib/stores/autofix';
+
+// Tab sections for Features
+const featureTabSections = [
+  { id: 'core', label: 'Core Features' },
+  { id: 'beta', label: 'Beta Features' },
+  { id: 'prompts', label: 'Prompt Library' },
+] as const;
+
+type FeatureTabSection = (typeof featureTabSections)[number]['id'];
 
 interface FeatureToggle {
   id: string;
@@ -109,6 +118,8 @@ const FeatureSection = memo(
 );
 
 export default function FeaturesTab() {
+  const [activeSection, setActiveSection] = useState<FeatureTabSection>('core');
+
   const {
     autoSelectTemplate,
     isLatestBranch,
@@ -336,16 +347,38 @@ export default function FeaturesTab() {
   };
 
   return (
-    <div className="flex flex-col gap-8">
-      <FeatureSection
-        title="Core Features"
-        features={features.stable}
-        icon="i-ph:check-circle"
-        description="Essential features that are enabled by default for optimal performance"
-        onToggleFeature={handleToggleFeature}
-      />
+    <div className="flex flex-col">
+      {/* Tab Navigation */}
+      <div className="flex gap-2 border-b border-[#333] pb-2 mb-6">
+        {featureTabSections.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveSection(tab.id)}
+            className="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors"
+            style={{
+              backgroundColor: activeSection === tab.id ? '#2a2a2a' : 'transparent',
+              color: activeSection === tab.id ? '#fff' : '#9ca3af',
+              borderBottom: activeSection === tab.id ? '2px solid #a855f7' : '2px solid transparent',
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-      {features.beta.length > 0 && (
+      {/* Core Features Section */}
+      {activeSection === 'core' && (
+        <FeatureSection
+          title="Core Features"
+          features={features.stable}
+          icon="i-ph:check-circle"
+          description="Essential features that are enabled by default for optimal performance"
+          onToggleFeature={handleToggleFeature}
+        />
+      )}
+
+      {/* Beta Features Section */}
+      {activeSection === 'beta' && features.beta.length > 0 && (
         <FeatureSection
           title="Beta Features"
           features={features.beta}
@@ -355,61 +388,64 @@ export default function FeaturesTab() {
         />
       )}
 
-      <motion.div
-        layout
-        className={classNames(
-          'bg-bolt-elements-background-depth-2',
-          'hover:bg-bolt-elements-background-depth-3',
-          'transition-all duration-200',
-          'rounded-lg p-4',
-          'group',
-        )}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <div className="flex items-center gap-4">
-          <div
-            className={classNames(
-              'p-2 rounded-lg text-xl',
-              'bg-bolt-elements-background-depth-3 group-hover:bg-bolt-elements-background-depth-4',
-              'transition-colors duration-200',
-              'text-purple-500',
-            )}
-          >
-            <div className="i-ph:book" />
+      {/* Prompt Library Section */}
+      {activeSection === 'prompts' && (
+        <motion.div
+          layout
+          className={classNames(
+            'bg-bolt-elements-background-depth-2',
+            'hover:bg-bolt-elements-background-depth-3',
+            'transition-all duration-200',
+            'rounded-lg p-4',
+            'group',
+          )}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <div className="flex items-center gap-4">
+            <div
+              className={classNames(
+                'p-2 rounded-lg text-xl',
+                'bg-bolt-elements-background-depth-3 group-hover:bg-bolt-elements-background-depth-4',
+                'transition-colors duration-200',
+                'text-purple-500',
+              )}
+            >
+              <div className="i-ph:book" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-medium text-bolt-elements-textPrimary group-hover:text-purple-500 transition-colors">
+                Prompt Library
+              </h4>
+              <p className="text-xs text-bolt-elements-textSecondary mt-0.5">
+                Choose a prompt from the library to use as the system prompt
+              </p>
+            </div>
+            <select
+              value={promptId}
+              onChange={(e) => {
+                setPromptId(e.target.value);
+                toast.success('Prompt template updated');
+              }}
+              className={classNames(
+                'p-2 rounded-lg text-sm min-w-[200px]',
+                'bg-bolt-elements-background-depth-3 border border-bolt-elements-borderColor',
+                'text-bolt-elements-textPrimary',
+                'focus:outline-none focus:ring-2 focus:ring-purple-500/30',
+                'group-hover:border-purple-500/30',
+                'transition-all duration-200',
+              )}
+            >
+              {PromptLibrary.getList().map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.label}
+                </option>
+              ))}
+            </select>
           </div>
-          <div className="flex-1">
-            <h4 className="text-sm font-medium text-bolt-elements-textPrimary group-hover:text-purple-500 transition-colors">
-              Prompt Library
-            </h4>
-            <p className="text-xs text-bolt-elements-textSecondary mt-0.5">
-              Choose a prompt from the library to use as the system prompt
-            </p>
-          </div>
-          <select
-            value={promptId}
-            onChange={(e) => {
-              setPromptId(e.target.value);
-              toast.success('Prompt template updated');
-            }}
-            className={classNames(
-              'p-2 rounded-lg text-sm min-w-[200px]',
-              'bg-bolt-elements-background-depth-3 border border-bolt-elements-borderColor',
-              'text-bolt-elements-textPrimary',
-              'focus:outline-none focus:ring-2 focus:ring-purple-500/30',
-              'group-hover:border-purple-500/30',
-              'transition-all duration-200',
-            )}
-          >
-            {PromptLibrary.getList().map((x) => (
-              <option key={x.id} value={x.id}>
-                {x.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }
