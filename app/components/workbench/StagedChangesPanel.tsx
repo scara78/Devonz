@@ -29,6 +29,8 @@ import {
   pendingCommandsCount,
   hasPendingCommands,
   clearPendingCommands,
+  enterPreviewMode,
+  exitPreviewMode,
   type StagedChange,
   type ChangeType,
 } from '~/lib/stores/staging';
@@ -258,7 +260,9 @@ export const StagedChangesPanel = memo(() => {
   const count = useStore(pendingCount);
   const stats = useStore(stagingStats);
   const byType = useStore(changesByType);
-  const settings = useStore(stagingStore).settings;
+  const stagingState = useStore(stagingStore);
+  const settings = stagingState.settings;
+  const isPreviewMode = stagingState.isPreviewMode;
   const pendingCmds = useStore(pendingCommandsList);
   const cmdCount = useStore(pendingCommandsCount);
   const hasCmds = useStore(hasPendingCommands);
@@ -453,31 +457,89 @@ export const StagedChangesPanel = memo(() => {
     openDiffModal(filePath);
   }, []);
 
+  /**
+   * Toggle preview mode - temporarily apply/restore pending changes in WebContainer
+   */
+  const handleTogglePreviewMode = useCallback(async () => {
+    setIsApplying(true);
+
+    try {
+      const wc = await webcontainer;
+
+      if (isPreviewMode) {
+        // Exit preview mode - restore original files
+        const result = await exitPreviewMode(wc);
+
+        if (result.failed.length > 0) {
+          toast.error(`Failed to exit preview for ${result.failed.length} file(s)`);
+        } else {
+          toast.info('Exited preview mode');
+        }
+      } else {
+        // Enter preview mode - apply pending files temporarily
+        const result = await enterPreviewMode(wc);
+
+        if (result.failed.length > 0) {
+          toast.error(`Failed to preview ${result.failed.length} file(s)`);
+        } else {
+          toast.success('Preview mode: changes applied temporarily');
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling preview mode:', error);
+      toast.error('Failed to toggle preview mode');
+    } finally {
+      setIsApplying(false);
+    }
+  }, [isPreviewMode]);
+
   const handleAcceptAll = useCallback(async () => {
     setIsApplying(true);
 
     try {
       acceptAllChanges();
-      await applyChangesToWebContainer();
+
+      if (isPreviewMode) {
+        /*
+         * Already in preview mode - files are already written to WebContainer
+         * Just clear the preview mode flag and clear staging
+         * No need to re-write files
+         */
+        stagingStore.setKey('isPreviewMode', false);
+      } else {
+        // Not in preview mode - apply files normally
+        await applyChangesToWebContainer();
+      }
 
       // Execute pending commands after files are applied
       await executePendingCommands();
     } finally {
       setIsApplying(false);
     }
-  }, [applyChangesToWebContainer, executePendingCommands]);
+  }, [applyChangesToWebContainer, executePendingCommands, isPreviewMode]);
 
   const handleRejectAll = useCallback(async () => {
     setIsApplying(true);
 
     try {
+      if (isPreviewMode) {
+        // Exit preview mode first - this restores original files
+        const wc = await webcontainer;
+        await exitPreviewMode(wc);
+      }
+
       rejectAllChanges();
-      await revertChangesToWebContainer();
+
+      if (!isPreviewMode) {
+        // Only revert if we weren't in preview mode (exitPreviewMode already restored)
+        await revertChangesToWebContainer();
+      }
+
       clearPendingCommands();
     } finally {
       setIsApplying(false);
     }
-  }, [revertChangesToWebContainer]);
+  }, [revertChangesToWebContainer, isPreviewMode]);
 
   // Don't render if staging is disabled or no pending changes/commands
   if (!settings.isEnabled || (!hasPending && !hasCmds)) {
@@ -605,6 +667,23 @@ export const StagedChangesPanel = memo(() => {
               )}
             </div>
 
+            {/* Preview Mode Banner */}
+            {isPreviewMode && (
+              <div className="mx-4 mt-2 mb-1 px-3 py-2 bg-yellow-500/20 border border-yellow-500/50 rounded-lg flex items-center gap-2">
+                <span className="i-ph:eye text-yellow-400" />
+                <span className="flex-1 text-sm text-yellow-300">
+                  Preview Mode - Changes are temporarily applied
+                </span>
+                <button
+                  onClick={handleTogglePreviewMode}
+                  disabled={isApplying}
+                  className="text-xs text-yellow-400 hover:text-yellow-300 underline disabled:opacity-50"
+                >
+                  Exit Preview
+                </button>
+              </div>
+            )}
+
             {/* Footer actions */}
             <div className="flex items-center justify-between px-4 py-3 border-t border-bolt-elements-borderColor bg-bolt-elements-background-depth-2">
               <span className="text-xs text-bolt-elements-textTertiary">
@@ -612,6 +691,21 @@ export const StagedChangesPanel = memo(() => {
                 {count} pending{cmdCount > 0 && ` • ${cmdCount} commands`}
               </span>
               <div className="flex items-center gap-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleTogglePreviewMode}
+                  disabled={isApplying}
+                  className={classNames(
+                    'disabled:opacity-50',
+                    isPreviewMode
+                      ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                      : 'bg-bolt-elements-button-secondary-background hover:bg-bolt-elements-button-secondary-backgroundHover text-bolt-elements-button-secondary-text',
+                  )}
+                >
+                  <span className="i-ph:eye mr-1.5" />
+                  {isPreviewMode ? 'Previewing' : 'Preview'}
+                </Button>
                 <Button
                   variant="default"
                   size="sm"

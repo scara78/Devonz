@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from '@nanostores/react';
 import { IconButton } from '~/components/ui/IconButton';
 import { workbenchStore } from '~/lib/stores/workbench';
+import { stagingStore } from '~/lib/stores/staging';
 import { setPendingChatMessage } from '~/lib/stores/chat';
 import { PortDropdown } from './PortDropdown';
 import { expoUrlAtom } from '~/lib/stores/qrCodeStore';
@@ -63,6 +64,7 @@ export const Preview = memo(({ setSelectedElement }: PreviewProps) => {
   const hasSelectedPreview = useRef(false);
   const previews = useStore(workbenchStore.previews);
   const activePreview = previews[activePreviewIndex];
+  const isPreviewMode = useStore(stagingStore).isPreviewMode;
 
   // Compute local preview URL (HTTP localhost format like "Open in new window" uses)
   const localPreviewUrl = (() => {
@@ -1226,6 +1228,32 @@ Remove this element completely from the JSX/HTML.`;
               <ResizeHandle side="left" />
               <ResizeHandle side="right" />
             </>
+          )}
+
+          {/* Preview Mode Indicator Badge */}
+          {isPreviewMode && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                background: 'rgba(234, 179, 8, 0.9)',
+                color: '#000',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                zIndex: 1000,
+                pointerEvents: 'none',
+              }}
+            >
+              <span className="i-ph:eye" />
+              PREVIEW MODE
+            </div>
           )}
         </div>
       </div>
