@@ -3,7 +3,7 @@
  * Preventing TS checks with files presented in the video for a better presentation.
  */
 import type { JSONValue, Message } from 'ai';
-import React, { type RefCallback, useEffect, useState } from 'react';
+import React, { type RefCallback, useEffect, useState, lazy, Suspense } from 'react';
 import { ClientOnly } from 'remix-utils/client-only';
 import { Menu } from '~/components/sidebar/Menu.client';
 import { Workbench } from '~/components/workbench/Workbench.client';
@@ -28,6 +28,9 @@ import ProgressCompilation from './ProgressCompilation';
 import type { ProgressAnnotation } from '~/types/context';
 import { SupabaseChatAlert } from '~/components/chat/SupabaseAlert';
 import { expoUrlAtom } from '~/lib/stores/qrCodeStore';
+
+// Lazy load Spline to avoid SSR issues
+const Spline = lazy(() => import('@splinetool/react-spline'));
 import { workbenchStore } from '~/lib/stores/workbench';
 import { useStore } from '@nanostores/react';
 import { StickToBottom, useStickToBottomContext } from '~/lib/hooks';
@@ -370,40 +373,31 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
               })}
             >
               {!chatStarted && (
-                <div id="intro" className="mt-[16vh] max-w-2xl mx-auto text-center px-4 lg:px-0 relative">
-                  {/* Glassmorphism Card with Glow Effect */}
-                  <div
-                    className="relative p-8 rounded-2xl backdrop-blur-xl border border-[#3d5a7f]/30"
-                    style={{
-                      background:
-                        'linear-gradient(135deg, rgba(30, 58, 95, 0.15) 0%, rgba(45, 74, 111, 0.08) 50%, rgba(30, 58, 95, 0.15) 100%)',
-                      boxShadow: '0 8px 32px rgba(30, 58, 95, 0.25), inset 0 1px 0 rgba(139, 173, 212, 0.1)',
-                    }}
-                  >
-                    {/* Subtle glow behind title */}
-                    <div
-                      className="absolute inset-0 rounded-2xl opacity-40 pointer-events-none"
-                      style={{
-                        background: 'radial-gradient(circle at 50% 30%, rgba(77, 106, 143, 0.4) 0%, transparent 60%)',
-                      }}
-                    />
-
-                    {/* Animated border glow */}
-                    <div
-                      className="absolute inset-0 rounded-2xl pointer-events-none animate-pulse"
-                      style={{
-                        boxShadow: '0 0 20px rgba(139, 173, 212, 0.15), 0 0 40px rgba(77, 106, 143, 0.1)',
-                        animationDuration: '3s',
-                      }}
-                    />
-
-                    <h1 className="relative text-4xl lg:text-5xl font-semibold text-white mb-4 animate-fade-in tracking-tight">
-                      Devonz
-                    </h1>
-                    <p className="relative text-base lg:text-lg text-[#8badd4] animate-fade-in animation-delay-200">
-                      Build anything with AI. Just describe what you want.
-                    </p>
+                <div id="intro" className="mt-[8vh] max-w-2xl mx-auto text-center px-4 lg:px-0 relative">
+                  {/* Spline 3D Animation Container */}
+                  <div className="relative w-full h-[200px] lg:h-[250px] mb-4">
+                    <ClientOnly>
+                      {() => (
+                        <Suspense
+                          fallback={
+                            <div className="flex items-center justify-center h-full">
+                              <div className="animate-pulse text-[#8badd4]">Loading 3D scene...</div>
+                            </div>
+                          }
+                        >
+                          <Spline
+                            scene="https://prod.spline.design/Nnisc8PVo8Y24LsrYw7fkLGx/scene.splinecode"
+                            style={{ width: '100%', height: '100%' }}
+                          />
+                        </Suspense>
+                      )}
+                    </ClientOnly>
                   </div>
+
+                  {/* Subtitle below the Spline animation */}
+                  <p className="text-base lg:text-lg text-[#8badd4] animate-fade-in animation-delay-200">
+                    Build anything with AI. Just describe what you want.
+                  </p>
                 </div>
               )}
               <StickToBottom

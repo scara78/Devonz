@@ -93,6 +93,8 @@
     "@radix-ui/react-visually-hidden": "^1.2.4",
     "@remix-run/node": "^2.15.2",
     "@remix-run/react": "^2.15.2",
+    "@splinetool/react-spline": "^4.1.0",
+    "@splinetool/runtime": "^1.12.39",
     "@tanstack/react-virtual": "^3.13.0",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@uiw/codemirror-theme-vscode": "^4.23.6",
