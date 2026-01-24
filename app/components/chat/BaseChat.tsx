@@ -370,13 +370,40 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
               })}
             >
               {!chatStarted && (
-                <div id="intro" className="mt-[16vh] max-w-2xl mx-auto text-center px-4 lg:px-0">
-                  <h1 className="text-4xl lg:text-5xl font-semibold text-bolt-elements-textPrimary mb-4 animate-fade-in tracking-tight">
-                    Devonz
-                  </h1>
-                  <p className="text-base lg:text-lg mb-8 text-bolt-elements-textSecondary animate-fade-in animation-delay-200">
-                    Build anything with AI. Just describe what you want.
-                  </p>
+                <div id="intro" className="mt-[16vh] max-w-2xl mx-auto text-center px-4 lg:px-0 relative">
+                  {/* Glassmorphism Card with Glow Effect */}
+                  <div
+                    className="relative p-8 rounded-2xl backdrop-blur-xl border border-[#3d5a7f]/30"
+                    style={{
+                      background:
+                        'linear-gradient(135deg, rgba(30, 58, 95, 0.15) 0%, rgba(45, 74, 111, 0.08) 50%, rgba(30, 58, 95, 0.15) 100%)',
+                      boxShadow: '0 8px 32px rgba(30, 58, 95, 0.25), inset 0 1px 0 rgba(139, 173, 212, 0.1)',
+                    }}
+                  >
+                    {/* Subtle glow behind title */}
+                    <div
+                      className="absolute inset-0 rounded-2xl opacity-40 pointer-events-none"
+                      style={{
+                        background: 'radial-gradient(circle at 50% 30%, rgba(77, 106, 143, 0.4) 0%, transparent 60%)',
+                      }}
+                    />
+
+                    {/* Animated border glow */}
+                    <div
+                      className="absolute inset-0 rounded-2xl pointer-events-none animate-pulse"
+                      style={{
+                        boxShadow: '0 0 20px rgba(139, 173, 212, 0.15), 0 0 40px rgba(77, 106, 143, 0.1)',
+                        animationDuration: '3s',
+                      }}
+                    />
+
+                    <h1 className="relative text-4xl lg:text-5xl font-semibold text-white mb-4 animate-fade-in tracking-tight">
+                      Devonz
+                    </h1>
+                    <p className="relative text-base lg:text-lg text-[#8badd4] animate-fade-in animation-delay-200">
+                      Build anything with AI. Just describe what you want.
+                    </p>
+                  </div>
                 </div>
               )}
               <StickToBottom

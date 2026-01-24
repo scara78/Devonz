@@ -58,7 +58,7 @@ export function LeftActionPanel({ importChat }: LeftActionPanelProps) {
   };
 
   const buttonBaseClass = classNames(
-    'flex items-center gap-2 justify-center',
+    '!flex w-full items-center gap-2 justify-center',
     'text-gray-300 hover:text-white',
     'border border-[#333333] hover:border-[#4a5568]',
     'h-10 px-4 py-2',
@@ -68,7 +68,7 @@ export function LeftActionPanel({ importChat }: LeftActionPanelProps) {
   );
 
   const primaryButtonClass = classNames(
-    'flex items-center gap-2 justify-center',
+    '!flex w-full items-center gap-2 justify-center',
     'text-white',
     'bg-gradient-to-r from-[#1e3a5f] to-[#2d4a6f]',
     'border border-[#3d5a7f] hover:border-[#4d6a8f]',
@@ -80,29 +80,47 @@ export function LeftActionPanel({ importChat }: LeftActionPanelProps) {
   );
 
   return (
-    <div className="flex flex-row items-center gap-3">
+    <div className="grid grid-cols-3 gap-3 w-full max-w-xl items-stretch">
       {/* Hidden file input */}
       <input type="file" id="chat-import-left" className="hidden" accept=".json" onChange={handleFileImport} />
 
       {/* Import Chat Button */}
-      <Button
-        onClick={() => {
-          const input = document.getElementById('chat-import-left');
-          input?.click();
-        }}
-        variant="default"
-        className={buttonBaseClass}
-        style={{ backgroundColor: '#1a1a1a' }}
-      >
-        <span className="i-ph:upload-simple w-4 h-4" />
-        <span>Import Chat</span>
-      </Button>
+      <div className="flex h-10">
+        <Button
+          onClick={() => {
+            const input = document.getElementById('chat-import-left');
+            input?.click();
+          }}
+          variant="default"
+          className={buttonBaseClass}
+          style={{ backgroundColor: '#1a1a1a', width: '100%', height: '100%' }}
+        >
+          <span className="i-ph:upload-simple w-4 h-4" />
+          <span>Import Chat</span>
+        </Button>
+      </div>
 
       {/* Import Folder Button */}
-      <ImportFolderButton importChat={importChat} className={buttonBaseClass} style={{ backgroundColor: '#1a1a1a' }} />
+      <div className="flex h-10">
+        <ImportFolderButton
+          importChat={importChat}
+          className={buttonBaseClass}
+          style={{ backgroundColor: '#1a1a1a', width: '100%', height: '100%' }}
+        />
+      </div>
 
       {/* Clone a Repo Button - Primary/Highlighted */}
-      <GitCloneButton importChat={importChat} className={primaryButtonClass} />
+      <div className="flex h-10">
+        <GitCloneButton
+         
+         
+         
+       
+          importChat={importChat}
+          className={primaryButtonClass}
+          style={{ width: '100%', height: '100%' }}
+        />
+      </div>
     </div>
   );
 }

@@ -44,10 +44,11 @@ const MAX_TOTAL_SIZE = 500 * 1024; // 500KB total limit
 
 interface GitCloneButtonProps {
   className?: string;
+  style?: React.CSSProperties;
   importChat?: (description: string, messages: Message[], metadata?: IChatMetadata) => Promise<void>;
 }
 
-export default function GitCloneButton({ importChat, className }: GitCloneButtonProps) {
+export default function GitCloneButton({ importChat, className, style }: GitCloneButtonProps) {
   const { ready, gitClone } = useGit();
   const [loading, setLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -171,15 +172,15 @@ ${escapeBoltTags(file.content)}
         variant="default"
         size="lg"
         className={classNames(
-          'gap-2',
+          'flex gap-2',
           'text-gray-300 hover:text-white',
           'border border-[#333333] hover:border-purple-500/50',
-          'h-10 px-4 py-2 min-w-[120px] justify-center',
+          'h-10 px-4 py-2 justify-center',
           'transition-all duration-200 ease-in-out',
           'hover:shadow-[0_0_12px_rgba(168,85,247,0.15)]',
           className,
         )}
-        style={{ backgroundColor: '#2a2a2a' }}
+        style={{ backgroundColor: '#2a2a2a', ...style }}
         disabled={!ready || loading}
       >
         Clone a repo

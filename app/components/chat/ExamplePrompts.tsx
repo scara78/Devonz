@@ -27,16 +27,33 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export function ExamplePrompts(sendMessage?: { (event: React.UIEvent, messageInput?: string): void | undefined }) {
-  const [prompts, setPrompts] = useState(() => shuffleArray(ALL_PROMPTS).slice(0, 6));
+  const [prompts, setPrompts] = useState(() => shuffleArray(ALL_PROMPTS).slice(0, 4));
 
   const refreshPrompts = useCallback(() => {
-    setPrompts(shuffleArray(ALL_PROMPTS).slice(0, 6));
+    setPrompts(shuffleArray(ALL_PROMPTS).slice(0, 4));
   }, []);
 
   return (
     <div id="examples" className="relative flex flex-col gap-4 w-full max-w-3xl mx-auto mt-6">
-      {/* Title */}
-      <h3 className="text-center text-sm font-medium text-white/90">Not sure where to start? Try one of these:</h3>
+      {/* Try different ideas button - now at the top */}
+      <div className="flex justify-center">
+        <button
+          onClick={refreshPrompts}
+          className="flex items-center gap-2 px-4 py-2 text-sm text-[#8badd4] hover:text-white transition-all duration-200
+            border border-[#3d5a7f]/50 hover:border-[#4d6a8f] rounded-full
+            hover:shadow-[0_0_12px_rgba(61,90,127,0.25)]"
+          style={{ backgroundColor: 'rgba(30, 58, 95, 0.15)' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(30, 58, 95, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(30, 58, 95, 0.15)';
+          }}
+        >
+          <div className="i-ph:arrows-clockwise text-base" />
+          <span>Try different ideas</span>
+        </button>
+      </div>
 
       {/* Prompt buttons */}
       <div
@@ -72,15 +89,6 @@ export function ExamplePrompts(sendMessage?: { (event: React.UIEvent, messageInp
           );
         })}
       </div>
-
-      {/* Refresh button */}
-      <button
-        onClick={refreshPrompts}
-        className="flex items-center gap-2 mx-auto px-3 py-1.5 text-sm text-[#6b8bb8] hover:text-[#8badd4] transition-colors bg-transparent"
-      >
-        <div className="i-ph:arrows-clockwise text-base" />
-        <span>Try different ideas</span>
-      </button>
     </div>
   );
 }
