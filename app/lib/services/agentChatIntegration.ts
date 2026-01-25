@@ -10,19 +10,10 @@ import { formatDataStreamPart, convertToCoreMessages } from 'ai';
 import { z } from 'zod';
 import { createScopedLogger } from '~/utils/logger';
 import { AGENT_SYSTEM_PROMPT, AGENT_SYSTEM_PROMPT_COMPACT } from '~/lib/agent/prompts';
-import {
-  agentToolDefinitions,
-  executeAgentTool,
-  isAgentTool,
-  getAgentToolNames,
-} from './agentToolsService';
+import { agentToolDefinitions, executeAgentTool, isAgentTool, getAgentToolNames } from './agentToolsService';
 import { getAgentOrchestrator } from './agentOrchestratorService';
 import { isAgentModeEnabled, getAgentModeSettings } from '~/lib/stores/agentMode';
-import {
-  TOOL_EXECUTION_APPROVAL,
-  TOOL_EXECUTION_DENIED,
-  TOOL_EXECUTION_ERROR,
-} from '~/utils/constants';
+import { TOOL_EXECUTION_APPROVAL, TOOL_EXECUTION_DENIED, TOOL_EXECUTION_ERROR } from '~/utils/constants';
 import type { ToolCallAnnotation } from '~/types/context';
 
 const logger = createScopedLogger('AgentChatIntegration');
@@ -136,19 +127,12 @@ export function getAgentToolSetWithoutExecute(): ToolSet {
 
 /**
  * Check if agent mode should be active for this request
+ * NOTE: Agent mode is now ALWAYS enabled - artifact mode has been removed
  */
-export function shouldUseAgentMode(requestOptions?: { agentMode?: boolean }): boolean {
-  // Check explicit request option first
-  if (requestOptions?.agentMode === false) {
-    return false;
-  }
-
-  if (requestOptions?.agentMode === true) {
-    return true;
-  }
-
-  // Fall back to settings
-  return isAgentModeEnabled();
+export function shouldUseAgentMode(_requestOptions?: { agentMode?: boolean }): boolean {
+  // Agent mode is always enabled - the artifact-based system has been fully replaced
+  // by the agent tool-based system for better control, visibility, and safety
+  return true;
 }
 
 /**
@@ -161,10 +145,7 @@ export function getAgentSystemPrompt(compact: boolean = false): string {
 /**
  * Enhance system prompt with agent capabilities when agent mode is enabled
  */
-export function enhanceSystemPromptWithAgentMode(
-  basePrompt: string,
-  options?: { compact?: boolean },
-): string {
+export function enhanceSystemPromptWithAgentMode(basePrompt: string, options?: { compact?: boolean }): string {
   const agentPrompt = getAgentSystemPrompt(options?.compact);
 
   return `${basePrompt}

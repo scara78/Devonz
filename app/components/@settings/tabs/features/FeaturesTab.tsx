@@ -9,7 +9,7 @@ import { PromptLibrary } from '~/lib/common/prompt-library';
 import { useStore } from '@nanostores/react';
 import { stagingStore, updateSettings as updateStagingSettings } from '~/lib/stores/staging';
 import { autoFixStore, updateAutoFixSettings } from '~/lib/stores/autofix';
-import { agentModeStore, updateAgentModeSettings } from '~/lib/stores/agentMode';
+// NOTE: agentModeStore import removed - Agent Mode is now always enabled
 
 // Tab sections for Features
 const featureTabSections = [
@@ -144,9 +144,8 @@ export default function FeaturesTab() {
   const autoFixState = useStore(autoFixStore);
   const { settings: autoFixSettings } = autoFixState;
 
-  // Agent Mode settings from agent mode store
-  const agentModeState = useStore(agentModeStore);
-  const { settings: agentModeSettings } = agentModeState;
+  // NOTE: Agent Mode store removed - Agent Mode is now always enabled
+  // All file operations and commands now use the agent tool-based system
 
   // Enable features by default on first load
   React.useEffect(() => {
@@ -241,23 +240,7 @@ export default function FeaturesTab() {
           break;
         }
 
-        case 'agentModeEnabled': {
-          updateAgentModeSettings({ enabled });
-          toast.success(`Agent Mode ${enabled ? 'enabled' : 'disabled'}`);
-          break;
-        }
-
-        case 'agentModeAutoApproveCommands': {
-          updateAgentModeSettings({ autoApproveCommands: enabled });
-          toast.success(`Auto-approve commands ${enabled ? 'enabled' : 'disabled'}`);
-          break;
-        }
-
-        case 'agentModeAutoApproveFiles': {
-          updateAgentModeSettings({ autoApproveFileCreation: enabled, autoApproveFileModification: enabled });
-          toast.success(`Auto-approve file operations ${enabled ? 'enabled' : 'disabled'}`);
-          break;
-        }
+        // NOTE: Agent Mode cases removed - Agent Mode is now always enabled
 
         default:
           break;
@@ -366,34 +349,8 @@ export default function FeaturesTab() {
         beta: true,
         tooltip: 'Display toast notifications when auto-fix starts, succeeds, or fails',
       },
-      {
-        id: 'agentModeEnabled',
-        title: 'Agent Mode',
-        description: 'Enable autonomous AI agent that can read/write files and run commands',
-        icon: 'i-ph:robot',
-        enabled: agentModeSettings.enabled,
-        experimental: true,
-        tooltip:
-          'When enabled, the AI can autonomously execute tasks using tools like file operations and terminal commands',
-      },
-      {
-        id: 'agentModeAutoApproveCommands',
-        title: 'Agent: Auto-Approve Commands',
-        description: 'Skip approval for terminal commands in agent mode',
-        icon: 'i-ph:terminal',
-        enabled: agentModeSettings.autoApproveCommands,
-        experimental: true,
-        tooltip: 'When enabled, the agent can run terminal commands without asking for permission',
-      },
-      {
-        id: 'agentModeAutoApproveFiles',
-        title: 'Agent: Auto-Approve File Operations',
-        description: 'Skip approval for file creation and modification in agent mode',
-        icon: 'i-ph:file-plus',
-        enabled: agentModeSettings.autoApproveFileCreation && agentModeSettings.autoApproveFileModification,
-        experimental: true,
-        tooltip: 'When enabled, the agent can create and modify files without asking for permission',
-      },
+      // NOTE: Agent Mode toggles removed - Agent Mode is now always enabled
+      // The artifact-based system has been fully replaced by agent tools
     ],
   };
 

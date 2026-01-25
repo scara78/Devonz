@@ -301,16 +301,15 @@ ${projectMemoryContent}
     ),
   );
 
-  // AGENT MODE: Replace system prompt entirely when agent mode is enabled
-  // This ensures the AI uses agent tools instead of artifacts
-  if (options?.agentMode) {
-    logger.info('🤖 Agent Mode: Using agent-specific system prompt (replacing standard prompt)');
-    systemPrompt = AGENT_MODE_FULL_SYSTEM_PROMPT(WORK_DIR);
+  // AGENT MODE: Always use agent-specific system prompt
+  // The artifact-based system has been fully replaced by agent tools
+  logger.info('🤖 Agent Mode: Using agent-specific system prompt (artifact mode removed)');
+  systemPrompt = AGENT_MODE_FULL_SYSTEM_PROMPT(WORK_DIR);
 
-    // Add context files if available
-    if (chatMode === 'build' && contextFiles && contextOptimization) {
-      const codeContext = createFilesContext(contextFiles, true);
-      systemPrompt = `${systemPrompt}
+  // Add context files if available
+  if (chatMode === 'build' && contextFiles && contextOptimization) {
+    const codeContext = createFilesContext(contextFiles, true);
+    systemPrompt = `${systemPrompt}
 
 <context_buffer>
 Below are the current project files loaded into context:
@@ -319,7 +318,6 @@ ${codeContext}
 ---
 </context_buffer>
 `;
-    }
   }
 
   const streamParams = {

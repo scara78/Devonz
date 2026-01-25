@@ -104,18 +104,22 @@ export const detectProjectType = async (
   return { type: '', setupCommand: '', followupMessage: '' };
 };
 
+/**
+ * @deprecated Use stageUserModifiedFiles() instead for agent mode.
+ * This function generates artifact XML which is no longer used.
+ */
 export const filesToArtifacts = (files: { [path: string]: { content: string } }, id: string): string => {
+  // Generate a clean description of modified files instead of artifact XML
+  const filePaths = Object.keys(files);
+
+  if (filePaths.length === 0) {
+    return '';
+  }
+
   return `
-<boltArtifact id="${id}" title="User Updated Files">
-${Object.keys(files)
-  .map(
-    (filePath) => `
-<boltAction type="file" filePath="${filePath}">
-${files[filePath].content}
-</boltAction>
-`,
-  )
-  .join('\n')}
-</boltArtifact>
-  `;
+**User Modified Files (${filePaths.length}):**
+${filePaths.map((filePath) => `- \`${filePath}\``).join('\n')}
+
+Please review these files and continue with the requested changes.
+`;
 };

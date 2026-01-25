@@ -2,6 +2,9 @@ import ignore from 'ignore';
 import type { ProviderInfo } from '~/types/model';
 import type { Template } from '~/types/template';
 import { STARTER_TEMPLATES } from './constants';
+import { stageChange, acceptChange, type ChangeType } from '~/lib/stores/staging';
+import { workbenchStore } from '~/lib/stores/workbench';
+import { generateId } from './fileUtils';
 
 const starterTemplateSelectionPrompt = (templates: Template[]) => `
 You are an experienced developer who helps people choose the best starter template for their projects.
@@ -15,16 +18,16 @@ Available templates:
   <tags>basic, script</tags>
 </template>
 ${templates
-    .map(
-      (template) => `
+  .map(
+    (template) => `
 <template>
   <name>${template.name}</name>
   <description>${template.description}</description>
   ${template.tags ? `<tags>${template.tags.join(', ')}</tags>` : ''}
 </template>
 `,
-    )
-    .join('\n')}
+  )
+  .join('\n')}
 
 Response Format:
 <selection>
@@ -183,18 +186,38 @@ export async function getTemplates(templateName: string, title?: string) {
     filesToImport.ignoreFile = ignoredFiles;
   }
 
+  // Stage files directly using the staging store (agent mode approach)
+  // Files are auto-approved since this is a user-initiated template import
+  const messageId = generateId();
+
+  for (const file of filesToImport.files) {
+    const stagedChange = stageChange({
+      filePath: file.path,
+      type: 'create' as ChangeType,
+      originalContent: null,
+      newContent: file.content,
+      actionId: `template-${messageId}-${file.path}`,
+      messageId: messageId,
+      description: `Template: ${file.path}`,
+    });
+
+    // Auto-approve the staged file (user-initiated template import)
+    if (stagedChange && stagedChange.status === 'pending') {
+      acceptChange(stagedChange.id);
+    }
+  }
+
+  // Show workbench after importing template files
+  workbenchStore.showWorkbench.set(true);
+
+  // Create a clean message without artifact XML
   const assistantMessage = `
 Devonz is initializing your project with the required files using the ${template.name} template.
-<boltArtifact id="imported-files" title="${title || 'Create initial files'}" type="bundled">
-${filesToImport.files
-      .map(
-        (file) =>
-          `<boltAction type="file" filePath="${file.path}">
-${file.content}
-</boltAction>`,
-      )
-      .join('\n')}
-</boltArtifact>
+
+**Files added (${filesToImport.files.length}):**
+${filesToImport.files.map((file) => `- \`${file.path}\``).join('\n')}
+
+The template files have been added to your project and are ready to use.
 `;
   let userMessage = ``;
   const templatePromptFile = files.filter((x) => x.path.startsWith('.bolt')).find((x) => x.name == 'prompt');

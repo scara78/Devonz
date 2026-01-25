@@ -256,14 +256,20 @@ class VersionsStore {
 
   /**
    * Sync versions from chat messages on load.
-   * This creates version entries from messages that have artifacts.
+   * Supports both legacy artifact messages and agent mode messages.
    */
   syncFromMessages(messages: { id: string; role: string; content: string; createdAt?: Date }[]): void {
     // Clear existing versions since we're syncing from chat
     this.versions.set({});
     this.currentVersionId.set(null);
 
+    // Legacy artifact pattern
     const artifactRegex = /<boltArtifact[^>]*title="([^"]*)"[^>]*>/gi;
+
+    // Agent mode patterns - look for tool usage indicators
+    const agentToolPattern = /Used tools? \d+ times?/i;
+    const filesAddedPattern = /\*\*Files (?:imported|added)\s*\((\d+)\)\*\*/i;
+    const templatePattern = /initializing your project.*template/i;
 
     let latestVersionId: string | null = null;
 
@@ -275,15 +281,35 @@ class VersionsStore {
 
       const content = typeof message.content === 'string' ? message.content : '';
 
-      // Find all artifacts in this message
-      const matches = [...content.matchAll(artifactRegex)];
+      // Try legacy artifact pattern first
+      const artifactMatches = [...content.matchAll(artifactRegex)];
 
-      if (matches.length === 0) {
-        continue;
+      let title: string | null = null;
+      let isVersionableMessage = false;
+
+      if (artifactMatches.length > 0) {
+        // Legacy artifact message
+        title = artifactMatches[0][1] || 'Project Update';
+        isVersionableMessage = true;
+      } else if (agentToolPattern.test(content)) {
+        // Agent mode message with tool usage
+        title = 'Agent Update';
+        isVersionableMessage = true;
+      } else if (filesAddedPattern.test(content)) {
+        // Files imported/added message
+        const match = content.match(filesAddedPattern);
+        const count = match ? match[1] : '?';
+        title = `Files Added (${count})`;
+        isVersionableMessage = true;
+      } else if (templatePattern.test(content)) {
+        // Template initialization message
+        title = 'Template Initialized';
+        isVersionableMessage = true;
       }
 
-      // Use the first artifact's title for the version
-      const title = matches[0][1] || 'Project Update';
+      if (!isVersionableMessage) {
+        continue;
+      }
 
       /*
        * Create version entry (files will be empty since we don't have full snapshot).
@@ -295,7 +321,7 @@ class VersionsStore {
       const version: ProjectVersion = {
         id,
         messageId: message.id,
-        title,
+        title: title || 'Project Update',
         description: `From message: ${message.id.substring(0, 8)}...`,
         timestamp,
         files: {}, // Empty - revert uses chat rewind, not file restore
