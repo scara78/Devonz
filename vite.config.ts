@@ -18,11 +18,31 @@ export default defineConfig((config) => {
     },
     build: {
       target: 'esnext',
+      rollupOptions: {
+        // Externalize undici and util/types for client builds - these are server-only modules
+        external: ['undici', 'util/types', 'node:util/types'],
+      },
+    },
+    resolve: {
+      alias: {
+        // Provide empty shim for util/types in client builds
+        'util/types': 'rollup-plugin-node-polyfills/polyfills/empty',
+        'node:util/types': 'rollup-plugin-node-polyfills/polyfills/empty',
+      },
     },
     ssr: {
       // Use native Node.js modules for SSR - don't polyfill these
       noExternal: [],
-      external: ['stream', 'node:stream', 'util', 'node:util', 'buffer', 'node:buffer'],
+      external: [
+        'stream',
+        'node:stream',
+        'util',
+        'util/types',
+        'node:util',
+        'node:util/types',
+        'buffer',
+        'node:buffer',
+      ],
     },
     plugins: [
       nodePolyfills({

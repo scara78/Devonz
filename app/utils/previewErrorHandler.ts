@@ -12,7 +12,8 @@
  * - Cooldown and deduplication
  */
 
-import { workbenchStore } from '~/lib/stores/workbench';
+// NOTE: workbenchStore is imported lazily inside showAlert() to avoid circular dependency
+// webcontainer/index.ts -> previewErrorHandler.ts -> workbench.ts -> webcontainer/index.ts
 import { cleanStackTrace } from '~/utils/stacktrace';
 import { createScopedLogger } from '~/utils/logger';
 import {
@@ -84,7 +85,7 @@ class PreviewErrorHandler {
   /**
    * Handle a preview error message from WebContainer
    */
-  handlePreviewMessage(message: {
+  async handlePreviewMessage(message: {
     type: string;
     message?: string;
     stack?: string;
@@ -92,7 +93,7 @@ class PreviewErrorHandler {
     search?: string;
     hash?: string;
     port?: number;
-  }): void {
+  }): Promise<void> {
     if (!this.#isEnabled) {
       return;
     }
@@ -165,6 +166,10 @@ class PreviewErrorHandler {
     contentParts.push(`\n\nStack trace:\n${cleanStackTrace(message.stack || '')}`);
 
     const content = contentParts.join('\n');
+
+    // Lazy import to avoid circular dependency:
+    // webcontainer/index.ts -> previewErrorHandler.ts -> workbench.ts -> webcontainer/index.ts
+    const { workbenchStore } = await import('~/lib/stores/workbench');
 
     workbenchStore.actionAlert.set({
       type: 'preview',

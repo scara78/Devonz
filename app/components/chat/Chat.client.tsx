@@ -388,11 +388,13 @@ export const ChatImpl = memo(
         return;
       }
 
-      // Animate the intro elements out before showing chat
-      await Promise.all([
-        animate('#examples', { opacity: 0, display: 'none' }, { duration: 0.1 }),
-        animate('#intro', { opacity: 0, flex: 1 }, { duration: 0.2, ease: cubicEasingFn }),
-      ]);
+      // Animate the intro element out before showing chat
+      // Only animate if the element exists to prevent framer-motion errors
+      const introElement = document.querySelector('#intro');
+
+      if (introElement) {
+        await animate('#intro', { opacity: 0, flex: 1 }, { duration: 0.2, ease: cubicEasingFn });
+      }
 
       // Batch both state updates together in a single transition
       startTransition(() => {
