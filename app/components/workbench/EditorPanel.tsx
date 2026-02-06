@@ -89,7 +89,7 @@ export const EditorPanel = memo(
               minSize={15}
               collapsible
               className="border-r border-bolt-elements-borderColor"
-              style={{ background: '#111114' }}
+              style={{ background: 'var(--bolt-elements-bg-depth-1)' }}
             >
               <div className="h-full">
                 <Tabs.Root defaultValue="files" className="flex flex-col h-full">
@@ -130,7 +130,7 @@ export const EditorPanel = memo(
                   <Tabs.Content
                     value="files"
                     className="flex-grow overflow-auto focus-visible:outline-none"
-                    style={{ background: '#0b0d13' }}
+                    style={{ background: 'var(--bolt-elements-bg-depth-1)' }}
                   >
                     <FileTree
                       className="h-full"
@@ -147,7 +147,7 @@ export const EditorPanel = memo(
                   <Tabs.Content
                     value="search"
                     className="flex-grow overflow-auto focus-visible:outline-none"
-                    style={{ background: '#0b0d13' }}
+                    style={{ background: 'var(--bolt-elements-bg-depth-1)' }}
                   >
                     <Search />
                   </Tabs.Content>
@@ -155,7 +155,7 @@ export const EditorPanel = memo(
                   <Tabs.Content
                     value="locks"
                     className="flex-grow overflow-auto focus-visible:outline-none"
-                    style={{ background: '#0b0d13' }}
+                    style={{ background: 'var(--bolt-elements-bg-depth-1)' }}
                   >
                     <LockManager />
                   </Tabs.Content>
@@ -164,7 +164,7 @@ export const EditorPanel = memo(
             </Panel>
 
             <PanelResizeHandle />
-            <Panel className="flex flex-col" defaultSize={80} minSize={20} style={{ background: '#0b0d13' }}>
+            <Panel className="flex flex-col" defaultSize={80} minSize={20} style={{ background: '#0d1117' }}>
               <PanelHeader className="overflow-x-auto">
                 {activeFileSegments?.length && (
                   <div className="flex items-center flex-1 text-sm">

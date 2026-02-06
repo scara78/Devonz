@@ -131,10 +131,10 @@ export const TerminalTabs = memo(() => {
       }}
     >
       <div className="h-full">
-        <div className="h-full flex flex-col" style={{ background: '#0b0d13' }}>
+        <div className="h-full flex flex-col" style={{ background: 'var(--bolt-elements-bg-depth-1)' }}>
           <div
             className="flex items-center border-y border-bolt-elements-borderColor gap-1.5 min-h-[34px] p-2"
-            style={{ background: '#0b0d13' }}
+            style={{ background: 'var(--bolt-elements-bg-depth-1)' }}
           >
             {Array.from({ length: terminalCount + 1 }, (_, index) => {
               const isActive = activeTerminal === index;
@@ -147,12 +147,13 @@ export const TerminalTabs = memo(() => {
                       className={classNames(
                         'flex items-center text-sm cursor-pointer gap-1.5 px-3 py-2 h-full whitespace-nowrap rounded-full',
                         {
-                          'bg-bolt-elements-terminals-buttonBackground text-bolt-elements-textSecondary hover:text-bolt-elements-textPrimary':
+                          'bg-bolt-elements-terminals-buttonBackground hover:text-bolt-elements-textPrimary':
                             isActive,
                           'bg-bolt-elements-background-depth-2 text-bolt-elements-textSecondary hover:bg-bolt-elements-terminals-buttonBackground':
                             !isActive,
                         },
                       )}
+                      style={isActive ? { color: '#22D3EE' } : undefined}
                       onClick={() => setActiveTerminal(index)}
                     >
                       <div className="i-ph:terminal-window-duotone text-lg" />
@@ -165,11 +166,12 @@ export const TerminalTabs = memo(() => {
                         className={classNames(
                           'flex items-center text-sm cursor-pointer gap-1.5 px-3 py-2 h-full whitespace-nowrap rounded-full',
                           {
-                            'bg-bolt-elements-terminals-buttonBackground text-bolt-elements-textPrimary': isActive,
+                            'bg-bolt-elements-terminals-buttonBackground': isActive,
                             'bg-bolt-elements-background-depth-2 text-bolt-elements-textSecondary hover:bg-bolt-elements-terminals-buttonBackground':
                               !isActive,
                           },
                         )}
+                        style={isActive ? { color: '#22D3EE' } : undefined}
                         onClick={() => setActiveTerminal(index)}
                       >
                         <div className="i-ph:terminal-window-duotone text-lg" />
